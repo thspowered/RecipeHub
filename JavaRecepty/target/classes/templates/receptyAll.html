@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seznam receptů</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Vlastní CSS styly -->
+    <style>
+        /* Případné vlastní styly */
+        .card {
+            transition: transform 0.2s;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card-title {
+            font-weight: bold;
+            color: #333;
+        }
+        .card-text {
+            color: #666;
+        }
+        #kategoriePanel {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Recepty</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/#">Domů</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/receptyAll">Recepty</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/ingredienceAll">Ingredience</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Seznam receptů</h2>
+    <div class="row">
+        <!-- Levý panel s kategoriemi -->
+        <div class="col-md-3">
+            <div id="kategoriePanel">
+                <h4>Vyberte kategorie:</h4>
+                <div id="kategorieCheckboxy">
+                    <!-- Checkboxy budou dynamicky vyplněny JavaScriptem -->
+                </div>
+                <button id="filtrujButton" class="btn btn-primary mt-3">Filtrovat</button>
+                <!-- Tlačítko pro vytvoření nového receptu -->
+                <button type="button" class="btn btn-success mt-3" data-toggle="modal" data-target="#vytvoritReceptModal">Vytvořit recept</button>
+            </div>
+        </div>
+        <!-- Seznam receptů -->
+        <div class="col-md-9">
+            <input type="text" id="searchInput" class="form-control mb-3" placeholder="Vyhledat recept podle názvu">
+            <div class="row" id="receptyList">
+                <!-- Recepty budou dynamicky vyplněny JavaScriptem -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modální okno pro vytvoření nového receptu -->
+<div class="modal fade" id="vytvoritReceptModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Vytvořit nový recept</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Formulář pro vytvoření nového receptu -->
+                <form id="vytvoritReceptForm">
+                    <div class="form-group">
+                        <label for="nazevReceptu">Název receptu:</label>
+                        <input type="text" class="form-control" id="nazevReceptu" name="nazevReceptu" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="popisReceptu">Popis receptu:</label>
+                        <textarea class="form-control" id="popisReceptu" name="popisReceptu" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="narocnostReceptu">Náročnost receptu:</label>
+                        <select class="form-control" id="narocnostReceptu" name="narocnostReceptu" required>
+                            <option value="Lehký">Lehký</option>
+                            <option value="Střední">Střední</option>
+                            <option value="Náročný">Náročný</option>
+                        </select>
+                    </div>
+                    <!-- Tabuľka pre výber ingrediencií a ich množstvo -->
+                    <div class="form-group">
+                        <label >Ingredience a množství:</label>
+                        <table class="table" id="ingredienceTable">
+                            <thead>
+                            <tr>
+                                <th>Ingredience</th>
+                                <th>Množství</th>
+                                <th></th> <!-- Tlačítko na odstránenie riadku -->
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <select class="form-control" name="ingredienceReceptu[]" required>
+                                        <!-- Ingredience budou načteny dynamicky pomocí JavaScriptu -->
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control" name="mnozstviIngredienci[]" required>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger odstranitIngredienciuButton">Odstrániť</button>
+                                </td>
+                            </tr>
+                            <!-- Možno pridať ďalšie riadky podľa potreby -->
+                            </tbody>
+                        </table>
+                        <button type="button" class="btn btn-primary" id="pridatIngredienciuButton">Přidat ingredienci</button>
+                    </div>
+                    <button type="submit" class="btn btn-success">Vytvořit recept</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS a jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Získání seznamu kategorií receptů z API při načtení stránky
+        $.get("/kategorie-receptu", function(data) {
+            // Vytvoření checkboxů pro každou kategorii
+            $.each(data, function(index, kategorie) {
+                var checkbox = `<div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="${kategorie.nazev}" id="kategorieCheckbox-${kategorie.id}">
+                                <label class="form-check-label" for="kategorieCheckbox-${kategorie.id}">${kategorie.nazev}</label>
+                            </div>`;
+                $('#kategorieCheckboxy').append(checkbox);
+            });
+            // Načtení všech receptů při načtení stránky
+            nactiRecepty('');
+        });
+
+        // Funkce pro načtení seznamu ingrediencí z API
+        function nactiIngredience() {
+            $.get("/ingredience", function(data) {
+                // Přidání prázdného řádku, abychom mohli přidávat další ingredience
+                var newRow = `<tr>
+                        <td>
+                            <select class="form-control" name="ingredienceReceptu[]" required>
+                                <!-- Ingredience budou načteny dynamicky pomocí JavaScriptu -->
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" class="form-control" name="mnozstviIngredienci[]" required>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger odstranitIngredienciuButton">Odstrániť</button>
+                        </td>
+                    </tr>`;
+                $('#ingredienceTable tbody').append(newRow);
+                // Naplnění selectů ingrediencemi
+                $('#ingredienceTable select').each(function() {
+                    var select = $(this);
+                    select.empty(); // Vyčištění výberového pole
+                    select.append('<option value="">-- Vyberte ingredienci --</option>');
+                    // Naplnění výberového pole daty z API
+                    $.each(data, function(index, ingredience) {
+                        select.append(`<option value="${ingredience.id}" data-jednotka="${ingredience.jednotka}">${ingredience.nazev}</option>`);
+                    });
+                });
+            });
+        }
+
+        // Zavolání funkce pro načtení ingrediencí při načtení stránky
+        nactiIngredience();
+
+        // Funkce pro přidání dalšího řádku pro výběr ingredience
+        $('#pridatIngredienciuButton').on('click', function() {
+            var newRow = `<tr>
+                            <td>
+                                <select class="form-control" name="ingredienceReceptu[]" required>
+                                    <!-- Ingredience budou načteny dynamicky pomocí JavaScriptu -->
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" class="form-control" name="mnozstviIngredienci[]" required>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-danger odstranitIngredienciuButton">Odstrániť</button>
+                            </td>
+                        </tr>`;
+            $('#ingredienceTable tbody').append(newRow);
+            // Aktualizácia výberu ingrediencií
+            nactiIngredience();
+        });
+
+        // Funkce pro odstranění řádku s ingrediencí
+        $(document).on('click', '.odstranitIngredienciuButton', function() {
+            $(this).closest('tr').remove();
+        });
+
+        // Funkce pro načtení receptů
+        function nactiRecepty(searchText) {
+            // Získání zaškrtnutých kategorií
+            var kategorie = [];
+            $('.form-check-input:checked').each(function() {
+                kategorie.push($(this).val());
+            });
+            // Získání seznamu receptů z API
+            $.get("/recepty", function(data) {
+                $('#receptyList').empty(); // Vyčištění seznamu receptů
+                // Filtr receptů podle kategorií a vyhledávacího textu
+                $.each(data, function(index, recept) {
+                    if (recept.nazev.toLowerCase().includes(searchText.toLowerCase()) &&
+                        (kategorie.length === 0 || kategorie.includes(recept.kategorie.nazev))) {
+                        var card = `<div class="col-md-4 mb-4">
+                                    <div class="card">
+
+                                        <div class="card-body">
+                                            <h5 class="card-title">${recept.nazev}</h5>
+
+                                            <p class="card-text">Náročnost: ${recept.narocnost}</p>
+                                            <a href="/recepty/detail/${recept.id}" class="btn btn-primary">Detail</a>
+                                        </div>
+                                    </div>
+                                </div>`;
+                        $('#receptyList').append(card);
+                    }
+                });
+            });
+        }
+
+        // Obsluha události změny vstupu vyhledávání
+        $('#searchInput').on('input', function() {
+            var searchText = $(this).val();
+            nactiRecepty(searchText);
+        });
+
+        // Obsluha události kliknutí na tlačítko "Filtrovat"
+        $('#filtrujButton').on('click', function() {
+            var searchText = $('#searchInput').val();
+            nactiRecepty(searchText);
+        });
+
+        // Obsluha události změny stavu checkboxů kategorií
+        $('.form-check-input').on('change', function() {
+            var searchText = $('#searchInput').val();
+            nactiRecepty(searchText);
+        });
+
+        // Obsluha události odeslání formuláře pro vytvoření receptu
+        $('#vytvoritReceptForm').submit(function(event) {
+            event.preventDefault(); // Zabránění výchozímu chování formuláře (přesměrování na jinou stránku)
+            // Získání dat z formuláře
+            var formData = {
+                nazev: $('#nazevReceptu').val(),
+                postupPripravy: $('#popisReceptu').val(),
+                narocnost: $('#narocnostReceptu').val()
+            };
+            // Odeslání dat na server pomocí AJAX
+            console.log(formData)
+            $.ajax({
+                type: "POST",
+                url: "/recepty", // Upravte URL podle vaší konfigurace serveru
+                contentType: "application/json",
+                data: JSON.stringify(formData),
+                success: function(response) {
+                    // Úspěšné vytvoření receptu, zde můžete provést jakékoliv další akce (např. aktualizaci seznamu receptů)
+                    alert("Recept byl úspěšně vytvořen.");
+                    // Zavřít modální okno
+                    $('#vytvoritReceptModal').modal('hide');
+                    // Volanie funkcie na vytvorenie ingrediencii s ID novovytvoreneho receptu
+                    vytvorIngredience(response.id);
+                    nactiRecepty();
+                },
+                error: function(xhr, status, error) {
+                    // Chyba při vytváření receptu, zde můžete zobrazit chybové hlášení nebo provést jiné akce
+                    alert("Chyba při vytváření receptu: " + xhr.responseText);
+                }
+            });
+        });
+
+
+    });
+
+    // Funkcia na vytvorenie ingrediencií pre recept
+    function vytvorIngredience(receptId) {
+        // Získanie dát o ingredienciách z formuláru
+        var ingredienceData = [];
+
+        $('#ingredienceTable tbody tr').each(function() {
+            var ingredienceId = $(this).find('select[name="ingredienceReceptu[]"]').val();
+            var mnozstvo = $(this).find('input[name="mnozstviIngredienci[]"]').val();
+
+            if (ingredienceId && mnozstvo) {
+                var data = {
+                    recept: { id: receptId }, // Presne takto predpokladám, že receptId je ID receptu
+                    ingredience: { id: ingredienceId }, // Predpokladám, že ingredienceId je ID ingrediencie
+                    mnozstvi: mnozstvo
+                };
+                ingredienceData.push(data);
+            }
+        });
+
+        console.log(ingredienceData);
+
+        // Odeslanie dát o ingredienciách na server pomocou AJAX
+        $.each(ingredienceData, function(index, data) {
+            $.ajax({
+                type: "POST",
+                url: "/recept-ingredience",
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function(response) {
+                    // Úspešné pridanie ingrediencie k receptu
+                    if (index === ingredienceData.length - 1) {
+                        alert("Ingrediencie boli úspešne pridané k receptu.");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    // Chyba pri pridávaní ingrediencie k receptu
+                    alert("Chyba pri pridávaní ingrediencie k receptu: " + xhr.responseText);
+                }
+            });
+        });
+    }
+
+
+
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domovská stránka - Recepty</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Vlastní CSS styly -->
+    <style>
+        /* Případné vlastní styly */
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Recepty</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="#">Domů</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/receptyAll">Recepty</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/ingredienceAll">Ingredience</a>
+            </li>
+
+        </ul>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <div class="jumbotron">
+        <h1 class="display-4">Vítejte na naší stránce s recepty!</h1>
+        <p class="lead">Zde najdete širokou škálu receptů na vaše oblíbené pokrmy.</p>
+        <hr class="my-4">
+        <p>Pokud hledáte inspiraci pro vaření, jste na správném místě. Stačí prozkoumat naši kolekci receptů a najít ten pravý recept pro vás!</p>
+        <a class="btn btn-primary btn-lg" href="#" role="button">Prozkoumat recepty</a>
+    </div>
+</div>
+
+<!-- Bootstrap JS a jQuery (pokud je potřeba) -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

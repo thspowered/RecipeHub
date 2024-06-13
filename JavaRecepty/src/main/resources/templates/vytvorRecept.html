@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vytvořit recept</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Vytvořit recept</h2>
+    <form id="vytvoritReceptForm">
+        <div class="form-group">
+            <label for="nazev">Název receptu:</label>
+            <input type="text" class="form-control" id="nazev" name="nazev" required>
+        </div>
+        <div class="form-group">
+            <label for="postupPripravy">Postup přípravy:</label>
+            <textarea class="form-control" id="postupPripravy" name="postupPripravy" rows="5" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="narocnost">Náročnost:</label>
+            <input type="text" class="form-control" id="narocnost" name="narocnost" required>
+        </div>
+        <div class="form-group">
+            <label for="kategorie">Kategorie:</label>
+            <select class="form-control" id="kategorie" name="kategorie" required>
+                <option value="1">Snídaně</option>
+                <option value="2">Oběd</option>
+                <option value="3">Večeře</option>
+            </select>
+        </div>
+        <!-- Tabulka pro zobrazení ingrediencí -->
+        <h3>Ingredience</h3>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Název</th>
+                <th>Jednotka měření</th>
+                <th>Množství</th>
+                <th>Akce</th>
+            </tr>
+            </thead>
+            <tbody id="ingredientsTableBody">
+            <!-- Ingredience budou dynamicky vyplněny JavaScriptem -->
+            </tbody>
+        </table>
+        <!-- Tlačítko pro přidání nové ingredience -->
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#ingredienceModal">Přidat ingredienci</button>
+        <!-- Tlačítko pro vytvoření nové ingredience -->
+        <button type="button" class="btn btn-success ml-2" data-toggle="modal" data-target="#vytvoritIngredienciModal">Vytvořit novou ingredienci</button>
+        <button type="submit" class="btn btn-primary mt-3">Vytvořit recept</button>
+    </form>
+</div>
+
+<!-- Modální okno pro výběr ingredience -->
+<div class="modal fade" id="ingredienceModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Vyberte ingredienci</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row" id="ingredienceList">
+                        <!-- Ingredience budou dynamicky vyplněny JavaScriptem -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modální okno pro vytvoření nové ingredience -->
+<div class="modal fade" id="vytvoritIngredienciModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Vytvořit novou ingredienci</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Formulář pro vytvoření nové ingredience -->
+                <form id="vytvoritIngredienciForm">
+                    <div class="form-group">
+                        <label for="nazevIngredience">Název ingredience:</label>
+                        <input type="text" class="form-control" id="nazevIngredience" name="nazevIngredience" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="jednotkaMereni">Jednotka měření:</label>
+                        <input type="text" class="form-control" id="jednotkaMereni" name="jednotkaMereni" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="mnozstvi">Množství:</label>
+                        <input type="number" class="form-control" id="mnozstvi" name="mnozstvi" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Vytvořit ingredienci</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS a jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Funkce pro přidání nové ingredience do tabulky
+        function addIngredientToTable(ingredience) {
+            var newRow = `<tr>
+                            <td>${ingredience.nazev}</td>
+                            <td>${ingredience.jednotka}</td>
+                            <td>${ingredience.mnozstvi}</td>
+                            <td><button type="button" class="btn btn-danger" onclick="removeIngredient(this)">Odstranit</button></td>
+                         </tr>`;
+            $('#ingredientsTableBody').append(newRow);
+        }
+
+        // Funkce pro odstranění řádku s ingrediencí
+        function removeIngredient(button) {
+            $(button).closest('tr').remove();
+        }
+
+        // Načtení ingrediencí ze serveru a zobrazení v modálním okně
+        $.get("/ingredience", function(data) {
+            $('#ingredienceList').empty();
+            data.forEach(function(ingredience) {
+                var card = `<div class="col-md-4 mb-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">${ingredience.nazev}</h5>
+                                        <p class="card-text">Kategorie: ${ingredience.kategorie}</p>
+                                        <button class="btn btn-primary" onclick="addIngredientToTable(${JSON.stringify(ingredience)})">Přidat</button>
+                                    </div>
+                                </div>
+                            </div>`;
+                $('#ingredienceList').append(card);
+            });
+        });
+
+        // Odeslání formuláře pro vytvoření receptu
+        $('#vytvoritReceptForm').submit(function(event) {
+            event.preventDefault();
+            var formData = $(this).serialize();
+            // Zde můžete provést POST požadavek s daty formuláře na server
+            console.log("Formulář byl odeslán s následujícími daty:");
+            console.log(formData);
+        });
+
+        // Odeslání formuláře pro vytvoření nové ingredience
+        $('#vytvoritIngredienciForm').submit(function(event) {
+            event.preventDefault();
+            var formData = $(this).serialize();
+            // Zde můžete provést POST požadavek s daty formuláře na server
+            console.log("Formulář pro vytvoření nové ingredience byl odeslán s následujícími daty:");
+            console.log(formData);
+        });
+    });
+</script>
+</body>
+</html>

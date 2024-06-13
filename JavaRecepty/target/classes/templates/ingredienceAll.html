@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seznam ingrediencí</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Vlastní CSS styly -->
+    <style>
+        /* Případné vlastní styly */
+        .card {
+            transition: transform 0.2s;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card-title {
+            font-weight: bold;
+            color: #333;
+        }
+        .card-text {
+            color: #666;
+        }
+        #kategoriePanel {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Recepty</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/#">Domů</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/receptyAll">Recepty</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/ingredienceAll">Ingredience</a>
+            </li>
+
+        </ul>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Seznam ingrediencí</h2>
+    <div class="row">
+        <!-- Levý panel s kategoriemi -->
+        <div class="col-md-3">
+            <div id="kategoriePanel">
+                <h4>Vyberte kategorie:</h4>
+                <div id="kategorieCheckboxy">
+                    <!-- Checkboxy budou dynamicky vyplněny JavaScriptem -->
+                </div>
+                <button id="filtrujButton" class="btn btn-primary mt-3">Filtrovat</button>
+                <!-- Tlačítko pro vytvoření nové ingredience -->
+                <button type="button" class="btn btn-success mt-3" data-toggle="modal" data-target="#vytvoritIngredienciModal">Vytvořit ingredienci</button>
+            </div>
+        </div>
+        <!-- Seznam ingrediencí -->
+        <div class="col-md-9">
+            <input type="text" id="searchInput" class="form-control mb-3" placeholder="Vyhledat ingredienci podle názvu">
+            <div class="row" id="ingredienceList">
+                <!-- Ingredience budou dynamicky vyplněny JavaScriptem -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modální okno pro vytvoření nové ingredience -->
+<div class="modal fade" id="vytvoritIngredienciModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Vytvořit novou ingredienci</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Formulář pro vytvoření nové ingredience -->
+                <form id="vytvoritIngredienciForm">
+                    <div class="form-group">
+                        <label for="nazevIngredience">Název ingredience:</label>
+                        <input type="text" class="form-control" id="nazevIngredience" name="nazevIngredience" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="jednotkaMereni">Jednotka měření:</label>
+                        <input type="text" class="form-control" id="jednotkaMereni" name="jednotkaMereni" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="kategorie">Kategorie:</label>
+                        <select class="form-control" id="kategorie" name="kategorie" required>
+                            <option value="1">Snídaně</option>
+                            <option value="2">Oběd</option>
+                            <option value="3">Večeře</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Vytvořit ingredienci</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS a jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Získání seznamu kategorií ingrediencí z API při načtení stránky
+        $.get("/kategorie-ingredienci", function(data) {
+            // Vytvoření checkboxů pro každou kategorii
+            $.each(data, function(index, kategorie) {
+                var checkbox = `<div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="${kategorie.nazev}" id="kategorieCheckbox-${kategorie.id}">
+                                <label class="form-check-label" for="kategorieCheckbox-${kategorie.id}">${kategorie.nazev}</label>
+                            </div>`;
+                $('#kategorieCheckboxy').append(checkbox);
+            });
+            // Načtení všech ingrediencí při načtení stránky
+            nactiIngredience('');
+        });
+
+        // Funkce pro načtení ingrediencí
+        function nactiIngredience(searchText) {
+            // Získání zaškrtnutých kategorií
+            var kategorie = [];
+            $('.form-check-input:checked').each(function() {
+                kategorie.push($(this).val());
+            });
+            // Získání seznamu ingrediencí z API
+            $.get("/ingredience", function(data) {
+                $('#ingredienceList').empty(); // Vyčištění seznamu ingrediencí
+                // Filtr ingrediencí podle kategorií a vyhledávacího textu
+                $.each(data, function(index, ingredience) {
+                    if (ingredience.nazev.toLowerCase().includes(searchText.toLowerCase()) &&
+                        (kategorie.length === 0 || kategorie.includes(ingredience.kategorie.nazev))) {
+                        var card = `<div class="col-md-4 mb-4">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">${ingredience.nazev}</h5>
+                                            <p class="card-text">Kategorie: ${ingredience.kategorie.nazev}</p>
+                                            <button class="btn btn-danger delete-btn" data-id="${ingredience.id}">Smazat</button>
+                                        </div>
+                                    </div>
+                                </div>`;
+                        $('#ingredienceList').append(card);
+                    }
+                });
+            });
+        }
+
+        // Funkce pro smazání ingredience
+        $('#ingredienceList').on('click', '.delete-btn', function() {
+            var ingredienceId = $(this).data('id');
+            if (confirm("Určitě chcete smazat tuto ingredienci?")) {
+                // AJAX požiadavka na odstránenie ingredience
+                $.ajax({
+                    type: "DELETE",
+                    url: "/ingredience/" + ingredienceId,
+                    success: function(response) {
+                        // Ingredience úspešne zmazaná, aktualizovať zobrazený zoznam
+                        nactiIngredience('');
+                    },
+                    error: function(xhr, status, error) {
+                        // Chyba pri mazaní ingredience, zobraziť upozornenie s chybovou správou
+                        var errorMessage = xhr.responseText;
+                        alert("Nepodarilo sa zmazať ingredienciu. Chyba: " + errorMessage);
+                    }
+                });
+            }
+        });
+
+
+        // Obsluha události změny vstupu vyhledávání
+        $('#searchInput').on('input', function() {
+            var searchText = $(this).val();
+            nactiIngredience(searchText);
+        });
+
+        // Obsluha události kliknutí na tlačítko "Filtrovat"
+        $('#filtrujButton').on('click', function() {
+            var searchText = $('#searchInput').val();
+            nactiIngredience(searchText);
+        });
+
+        // Obsluha události změny stavu checkboxů kategorií
+        $('.form-check-input').on('change', function() {
+            var searchText = $('#searchInput').val();
+            nactiIngredience(searchText);
+        });
+
+        $('#vytvoritIngredienciForm').submit(function(event) {
+            event.preventDefault();
+            var formData = {
+                nazev: $('#nazevIngredience').val(), // Získať hodnotu názvu ingrediencie pomocou identifikátora 'nazevIngredience'
+                jednotkaMerania: $('#jednotkaMereni').val(), // Získať hodnotu jednotky merania pomocou identifikátora 'jednotkaMereni'
+                kategorie: {
+                    id: $('#kategorie').val() // Získať hodnotu ID kategórie pomocou identifikátora 'kategorie'
+                }
+            };
+            // Konvertovanie objektu na JSON reťazec
+            var jsonData = JSON.stringify(formData);
+            console.log(jsonData);
+            // AJAX požiadavka na uloženie nové ingrediencie
+            $.ajax({
+                type: "POST",
+                url: "/ingredience",
+                contentType: "application/json",
+                data: jsonData,
+                success: function(response) {
+                    // V prípade úspechu zavrieť modálne okno a načítať zoznam ingrediencií
+                    $('#vytvoritIngredienciModal').modal('hide');
+                    nactiIngredience('');
+                },
+                error: function(xhr, status, error) {
+                    // Získať konkrétnu chybovú správu z HTTP odpovede
+                    var errorMessage = xhr.responseText;
+                    // Zobraziť upozornenie s chybovou správou
+                    alert("Nepodarilo sa pridať novú ingredienciu. Chyba: " + errorMessage);
+                }
+            });
+        });
+
+    });
+</script>
+</body>
+</html>
